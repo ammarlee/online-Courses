@@ -187,7 +187,7 @@
 </template>
 
 <script>
-import Functions from "../../../server/api";
+import Functions from "../../../server/QuestionsApi";
 import table from "../includes/table";
 export default {
   components: {
@@ -218,29 +218,39 @@ export default {
     };
   },
   methods: {
-    async deleteQuestion(id) {
-      let conf = confirm("are you sure tha you want to delete it ");
-      if (conf) {
-        try {
-          await Functions.deleteQuestion({ questionId: id });
+     deleteQuestion(id) {
+       this.$dialog.info({
+        text: "are you  sure ?",
+        title: "delete",
+        persistent: true,
+        actions: {
+          true: {
+            text: "yes",
+            color: "green",
+            handle: async() => {
+              try {
+               await Functions.deleteQuestion({ questionId: id });
           this.questions = this.questions.filter((i) => {
             return i._id.toString() !== id.toString();
           });
-          let msg = "you have delete the question ";
-          let m = msg.toUpperCase();
-          this.sweetAlert("success", m, 3000, "bottom-right");
-        } catch (error) {
-          console.log(error);
-        }
-      }
+                let msg = `deleted succefully`;
+                this.dialogNotifySuccess(msg);
+              } catch (error) {
+                this.dialogNotifyError("there are soemthing wrong ");
+              }
+            },
+          },
+          false: {
+            text: "cancel",
+          },
+        },
+      });
+     
+      
     },
     editQuestion(item) {
       this.editMode = true
       this.editId = item._id
-      console.log(item);
-      console.log(item.answers.forEach(i=>{console.log(i.img);}));
-      // console.log(this.question.answers222);
-      console.log(item.answers[0].a);
       this.question = {
          lesson: item.lesson,
          _id:item._id,
@@ -264,18 +274,16 @@ export default {
     async submitEditQuestion(){
       try {
         let s =this.formData()
-        const res = await Functions.updateQuestion(s)
-        console.log(res);
-      } catch (error) {
-        console.log(error);
+        await Functions.updateQuestion(s)
+       let msg = `updated succefully`;
+                this.dialogNotifySuccess(msg);
+              } catch (error) {
+                this.dialogNotifyError("there are soemthing wrong ");
       }
 
     },
     refsImg(e) {
-      // console.log(e.target.id);
-      console.log(e.path[6].id);
       let target = e.path[6].id
-
       if (target === "btn-a") {
         this.$refs.answera.click();
       } else if (target === "btn-b") {
@@ -317,11 +325,13 @@ export default {
       try {
         let s =this.formData()
         
-        const res = await Functions.createQuestion(s);
-        console.log(res);
+        await Functions.createQuestion(s);
+       
       this.disabled = false
-
-      } catch (error) {
+  let msg = `created succefully`;
+                this.dialogNotifySuccess(msg);
+              } catch (error) {
+                this.dialogNotifyError("there are soemthing wrong ");
       this.disabled = false
 
         console.log(error);

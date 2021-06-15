@@ -49,7 +49,7 @@
             >
               <template v-slot:activator="{ on }">
                 <v-btn icon small class="d-none d-sm-inline mt-1"  v-on="on">
-                  <v-icon class="white--text">mdi-bell-ring</v-icon>
+                  <v-icon class="warning--text">mdi-bell-ring</v-icon>
                 </v-btn>
               </template>
               <!-- menu for notifications -->
@@ -130,7 +130,8 @@
     </v-app-bar>
 </template>
 <script>
-import Functions from "../../../server/api";
+import Functions from "../../../server/StudentsApi";
+import AuthApi from "../../../server/AuthanticationApi";
 import { mapGetters } from "vuex";
 
 export default {
@@ -150,13 +151,13 @@ export default {
  
   methods: {
     async navegateTolecture(item){
-      console.log(item);
       try {
-        const res =await Functions.notificationSeen({item,userId:this.getUser._id})
-        console.log(res);
+       await Functions.notificationSeen({item,userId:this.getUser._id})
         this.$store.dispatch('updateNotification',item)
         
-        this.$router.push('/lecture/'+item.lectureId)
+        // this.$router.push('/lecture/'+item.lectureId)
+        this.$router.push('/LectureDetails/'+item.lectureId)
+        
       } catch (error) {
         console.log(error);
         
@@ -165,7 +166,7 @@ export default {
   
     async logout() {
       try {
-        await Functions.logout();
+        await AuthApi.logout();
         document.cookie = "TokenUser" + "=; Max-Age=-99999999;";
         document.cookie = "my test" + "=; Max-Age=-99999999;";
         localStorage.removeItem("userToken");

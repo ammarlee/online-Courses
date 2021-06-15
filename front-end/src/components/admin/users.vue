@@ -128,7 +128,7 @@
 </template>
 
 <script>
-import Functions from "../../../server/api";
+import Functions from "../../../server/StudentsApi";
 export default {
   name: "all-users",
   data() {
@@ -168,7 +168,6 @@ export default {
   async mounted() {
     try {
       const res = await Functions.getallStudents();
-      console.log(res.data);
       this.students = res.data;
     } catch (error) {
       console.log(error);
@@ -181,19 +180,35 @@ export default {
         else return 'pink'
       },
 
-     async  deleteItem (item) {
-         console.log(item);
-         const sure = confirm('are you sure you want to delete')
-         try {
-             if (sure) {
-           const res = await Functions.deleteStudent({id:item._id})
-           console.log(res.data);
-           
-         }
-         } catch (error) {
-           console.log(error);
-         }
-       
+       deleteItem (item) {
+ this.$dialog.info({
+        text: "are you  sure ?",
+        title: "delete",
+        persistent: true,
+        actions: {
+          true: {
+            text: "yes",
+            color: "green",
+            handle: async() => {
+              try {
+                // let list = this.students.map((i) => {
+                //   {
+                //     return i._id;
+                //   }
+                // });
+               await Functions.deleteStudent({id:item._id})
+                let msg = `deleted succefully`;
+                this.dialogNotifySuccess(msg);
+              } catch (error) {
+                this.dialogNotifyError("there are soemthing wrong ");
+              }
+            },
+          },
+          false: {
+            text: "cancel",
+          },
+        },
+      });
        
       },
        editItem (item) {

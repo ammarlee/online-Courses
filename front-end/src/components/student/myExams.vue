@@ -15,7 +15,9 @@
 </template>
 
 <script>
-import Functions from "../../../server/api";
+import Functions from "../../../server/ExamsApi";
+import studentApi from "../../../server/StudentsApi";
+
 import pdf from "vue-pdf";
 
 export default {
@@ -33,8 +35,7 @@ export default {
   },
   async mounted() {
     try {
-      let res = await Functions.getStudentData();
-      console.log(res.data.student.exams[0]);
+      let res = await studentApi.getStudentData();
       this.exams = res.data.student.exams;
     } catch (error) {
       console.log(error);

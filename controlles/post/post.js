@@ -958,15 +958,30 @@ exports.getSingleLecture = async (req, res, next) => {
     res.status(400).json({ error });
   }
 };
+exports.getleLectureDetails = async (req, res, next) => {
+  try {
+    const { lectureId } = req.body;
+    const lecture = await Lec.findOne({ _id: lectureId })
+    console.log(lecture);
+        res.status(200).json({
+          lecture,
+        });
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({ error });
+  }
+};
 exports.getRemainingTime = async (req, res, next) => {
   try {
     const { userId, lectureId } = req.body;
     const lecture = await Lec.findOne({ _id: lectureId });
-    let findstudentPaid = lecture.StudentAttendance.filter((i) => {
+
+    let findstudentPaid = lecture.StudentAttendance.find((i) => {
       return i.studentId.toString() == userId.toString();
     });
+
     let StartingTime =
-      new Date(findstudentPaid[0].endTime).getTime() - new Date().getTime();
+      new Date(findstudentPaid.endTime).getTime() - new Date().getTime();
     let remaind = Math.round(StartingTime);
     if (remaind <= 0) {
       res.status(402).json({ msg: "your time is over" });
@@ -976,7 +991,7 @@ exports.getRemainingTime = async (req, res, next) => {
         msg: "you still have remain time",
         remainTime,
         lecture,
-        remaind: findstudentPaid[0].endTime,
+        remaind: findstudentPaid.endTime,
       });
     }
   } catch (error) {

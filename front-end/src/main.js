@@ -10,15 +10,9 @@ import VueSweetalert2 from "vue-sweetalert2";
 import "sweetalert2/dist/sweetalert2.min.css";
 import VueScreen from 'vue-screen';
 import CoolLightBox from 'vue-cool-lightbox'
+import Mixins from './plugins/mixins';
 import 'vue-cool-lightbox/dist/vue-cool-lightbox.min.css'
-// import Tawk from 'vue-echo'
-  
-// Vue.use(Tawk, {
-//     tawkSrc: 'YOU_TAWK_SRC'
-// })
-// import Functions from "../server/api";
 
-// import leftDrawer from '@/user/includesComponent/leftDrawer.vue'
 // vue photos
 Vue.use(CoolLightBox)
 Vue.use(VueScreen);
@@ -26,118 +20,18 @@ Vue.use(require('vue-moment'));
 
 // Vue.component('app-left-drawer', leftDrawer)
 Vue.prototype.$soketio = socktConnect("http://localhost:3000/");
-
-Vue.mixin({
-  
-  data() {
-    return {
-      errors: null,
-      overlay: false,
-      socket: "",
-      alertmsg:null,
-    };
-  },
-  computed: {
-    drawer: {
-      get() {
-        return this.$store.getters.drawer;
-      },
-      set(value) {
-        this.$store.dispatch("toggleDrawer", value);
-      },
-    },
-    currentUser(){
-      return this.$store.getters.getUser
-    },
-    onlineUsers(){
-      return this.$store.getters.onlineUsers
-    },
-    alert(){
-      return this.$store.getters.alert
-    },
-  
-  
-  },
-  methods: {
-    getUserLocation(){
-      let data= {
-        _id:this.$store.getters.getUser._id,
-        time:new Date(),
-        page:this.$route.path
-      }
-      this.$soketio.emit('userLocation',data)
-    },
-    sweetAlert(icon, msg, time,position) {
-      const Toast = this.$swal.mixin({
-        toast: true,
-        position:position ,
-        showConfirmButton: false,
-        timer: time,
-        timerProgressBar: true,
-        didOpen: (toast) => {
-          toast.addEventListener("mouseenter", this.$swal.stopTimer);
-          toast.addEventListener("mouseleave", this.$swal.resumeTimer);
-        },
-      });
-
-      Toast.fire({
-        icon: icon,
-        title: msg,
-        showClass: {
-          popup: "animate__animated animate__fadeInDown",
-        },
-        hideClass: {
-          popup: "animate__animated animate__fadeOutUp",
-        },
-      });
-    },
-    sweetAlertwithImage( title, text,imageUrl,imageWidth,imageHeight,position,time) {
-      const Toast = this.$swal.mixin({
-        toast: true,
-        position:position ,
-        showConfirmButton: false,
-        timer: time,
-        timerProgressBar: true,
-        didOpen: (toast) => {
-          toast.addEventListener("mouseenter", this.$swal.stopTimer);
-          toast.addEventListener("mouseleave", this.$swal.resumeTimer);
-        },
-      });
-
-      Toast.fire({
-        html:`
-        <img src='${imageUrl}'
-         style='border-radius: 50%;
-        height: ${imageWidth}px;
-        width: ${imageHeight}px;
-        display: inline-block;'/>
-        <p ><b>${title}</b>${text}</p>
-
-        `,
-        imageAlt: 'Custom image',
-        showClass: {
-          popup: "animate__animated animate__fadeInDown",
-        },
-        hideClass: {
-          popup: "animate__animated animate__fadeOutUp",
-        },
-      });
-    },
-   
-  },
-});
-
-const base = axios.create({
-  baseURL: "http://localhost:3000/",
-});
-Vue.prototype.$http = base;
+Vue.mixin(Mixins);
 
 Vue.use(VueSweetalert2);
-
 Vue.config.productionTip = false;
-axios.defaults.withCredentials = true;
 Vue.use(VueAxios, axios);
-
+import VuetifyDialog from 'vuetify-dialog'
+import 'vuetify-dialog/dist/vuetify-dialog.css'
+Vue.use(VuetifyDialog, {
+  context: {
+    vuetify
+  }
+})
 new Vue({
   router,
   store,
@@ -215,6 +109,24 @@ new Vue({
       
       
 
+  },
+  created () {
+    const findUserToken= function readCookie(name) {
+      var nameEQ = name + "=";
+      var ca = document.cookie.split(';');
+      for(var i=0;i < ca.length;i++) {
+          var c = ca[i];
+          while (c.charAt(0)==' ') c = c.substring(1,c.length);
+          if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+      }
+      return null;
+  }
+    axios.interceptors.request.use(
+      config => {
+       config.headers['authorization'] = `Bearer ${findUserToken('TokenUser')}`
+       return config;
+     });
+    
   },
   
 

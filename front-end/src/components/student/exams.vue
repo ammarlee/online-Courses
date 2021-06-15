@@ -21,7 +21,7 @@
 </template>
 
 <script>
-import Functions from "../../../server/api";
+import Functions from "../../../server/ExamsApi";
 
 export default {
   name: "exams",

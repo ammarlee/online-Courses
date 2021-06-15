@@ -75,7 +75,7 @@
 </v-app>
 </template>
 <script>
-import Functions from "../../../server/api"
+import Functions from "../../../server/AuthanticationApi"
     export default {
     data() {
         return {
@@ -96,10 +96,13 @@ import Functions from "../../../server/api"
                try {
                  this.loading=true
                const res = await Functions.forgetPassword({email:this.email})
+                  let msg =`Done`
+          this.dialogNotifySuccess(msg)
                this.msg= res.data.msg
                  this.loading=false
                    
                } catch (error) {
+                  this.dialogNotifyError("there are soemthing wrong ")
                  this.loading=false
                   this.errors = error.response.data.error
                    

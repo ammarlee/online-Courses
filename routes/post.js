@@ -42,6 +42,9 @@ router.get('/get-all-lectures',postController.getAllLectures)
 router.get('/dashboardData',Protect.protect,Protect.restrectTo('admin','guide'),postController.getDashboardData)
 
 router.post('/get-single-lecture',Protect.protect,Protect.restrectTo('admin','user','guide'),postController.getSingleLecture)
+
+router.post('/get-single-lecture-details',Protect.protect,Protect.restrectTo('admin','user','guide'),postController.getleLectureDetails)
+
 router.post('/get-remaining-time',Protect.protect,Protect.restrectTo('admin','user'),postController.getRemainingTime)
 router.post('/add-extra-time',Protect.protect,Protect.restrectTo('admin'),postController.addExtraTime)
 router.post('/delete-lecture',Protect.protect,Protect.restrectTo('admin'),postController.deleteLecture)

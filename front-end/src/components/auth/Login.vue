@@ -78,7 +78,7 @@
   </div>
 </template>
 <script>
-import Functions from "../../../server/api";
+import Functions from "../../../server/AuthanticationApi";
 
 export default {
   name: "login",
@@ -110,71 +110,22 @@ export default {
   },
 
   methods: {
-  async  opensearch(){
-    
-      // var isMobile = {
-      //       Android: function () {
-      //           return navigator.userAgent.match(/Android/i);
-      //       },
-      //       BlackBerry: function () {
-      //           return navigator.userAgent.match(/BlackBerry/i);
-      //       },
-      //       iOS: function () {
-      //           return navigator.userAgent.match(/iPhone|iPad|iPod/i);
-      //       },
-      //       Opera: function () {
-      //           return navigator.userAgent.match(/Opera Mini/i);
-      //       },
-      //       Windows: function () {
-      //           return navigator.userAgent.match(/IEMobile/i);
-      //       },
-      //       any: function () {
-      //           return (isMobile.Android() || isMobile.BlackBerry() || isMobile.iOS() || isMobile.Opera() || isMobile.Windows());
-      //       }
-      //   };
-
-      //   if (isMobile.any()) {
-      //     console.log(" mobile");
-          
-
-      //   }
-      //   else {
-      //     console.log("not mobile");
-             
-      //   }
-       var xhttp = new XMLHttpRequest();
-  xhttp.onreadystatechange = function() {
-    if (this.readyState == 4 && this.status == 200) {
-      console.log( this.responseText);
-    }
-  };
-  xhttp.open("GET", "//api.ipify.org?format=json", true);
-  xhttp.send();
-      console.log(navigator.userAgent);
-         alert(navigator.userAgent);
-    },
+  
     async login() {
       try {
         this.loading = true;
         const currentUser = await Functions.login(this.user);
         this.loading = false;
         if (currentUser.status == "200") {
-          this.sweetAlert(
-            "success",
-            `hello ${currentUser.data.user.name}`,
-            2000,
-            "top"
-          );
-          // console.log(currentUser.data);
+
+          let msg =`hello ${currentUser.data.user.name}`
+          this.dialogNotifySuccess(msg)
+        
           this.$soketio.emit("firstRoom", currentUser.data.user.name);
           this.$soketio.on("onlineInTheRoom", (data) => {
-            console.log(data);
             this.$store.commit("setallOnlineClients", data.onlineClients);
           });
           this.$store.dispatch("setUserData", currentUser);
-
-          // this.$store.dispatch("setUser", currentUser.data.user);
-          // this.$socketio.emit('goOnline',currentUser.data.user)
           let onlineData = {
             _id: currentUser.data.user._id,
             name: currentUser.data.user.name,
@@ -184,7 +135,6 @@ export default {
             phone: currentUser.data.user.phone,
             date: new Date(),
           };
-          // console.log(onlineData);
           this.$soketio.emit("online", onlineData);
         if (currentUser.data.user.role =='admin') {
           this.$router.push("/admin");
@@ -197,10 +147,9 @@ export default {
       } catch (error) {
         console.log(error);
         const er = error.response.data.errors;
-        // const er = error.response.data.errors;
         this.loading = false;
         this.errors = error.response.data.error;
-        this.sweetAlert("error", er, 4000, "top");
+          this.dialogNotifyError(er)
       }
     },
   },

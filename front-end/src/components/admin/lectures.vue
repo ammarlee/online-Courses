@@ -41,18 +41,7 @@
           </createLecture>
         </v-card>
       </v-dialog>
-      <!--  FOR DELETING THE LECTURE -->
-      <v-dialog v-model="dialogDelete" max-width="500px">
-        <v-card>
-          <v-card-title class="headline">Are you sure you want to delete this item?</v-card-title>
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn color="blue darken-1" text @click="dialogDelete =false">Cancel</v-btn>
-            <v-btn color="blue darken-1" text @click="deleteItemConfirm">OK</v-btn>
-            <v-spacer></v-spacer>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
+      
       <!--  END THE DELETING LECTURE -->
       <!--  START EDITING LECTURE -->
       <v-dialog v-model="editDialog" max-width="500px" v-if="editDialog">
@@ -149,7 +138,7 @@
 </template>
 
 <script>
-import Functions from "../../../server/api";
+import Functions from "../../../server/LecturesApi";
 import createLecture from "./upload-lec";
 import table from "../includes/table";
 
@@ -162,7 +151,6 @@ export default {
     return {
       alert: false,
       te: false,
-      dialogDelete: false,
       editDialog: false,
       editData: null,
       editTimeDialog: false,
@@ -197,22 +185,36 @@ export default {
     
   },
   methods: {
-    async deleteItemConfirm() {
-      this.dialogDelete = true;
-      try {
-        await Functions.deleteLecture(this.id);
-        this.dialogDelete = false;
-        this.$store.dispatch('deleteLecture',this.id)
-        
-        this.id = null;
-      } catch (error) {
-        console.log(error);
-      }
+     deleteItemConfirm(id) {
+       this.$dialog.info({
+        text: "are you  sure ?",
+        title: "delete",
+        persistent: true,
+        actions: {
+          true: {
+            text: "yes",
+            color: "green",
+            handle: async() => {
+              try {
+                 await Functions.deleteLecture(id);
+                  this.$store.dispatch('deleteLecture',id)
+                let msg = `deleted succefully`;
+                this.dialogNotifySuccess(msg);
+              } catch (error) {
+                this.dialogNotifyError("there are soemthing wrong ");
+              }
+            },
+          },
+          false: {
+            text: "cancel",
+          },
+        },
+      });
+   
+    
+      
     },
-    async deleteLecture(id) {
-      this.dialogDelete = true;
-      this.id = id;
-    },
+    
     editLecture(id) {
       let lectureinx = this.lectures.findIndex((i) => {
         return i._id == id;
@@ -242,9 +244,13 @@ export default {
         // this.lectures[this.index] = res.data.lecture;
         this.index = null;
         this.editDialog = false;
+        let msg = `updated succefully`;
+                this.dialogNotifySuccess(msg);
 
         // console.log(res);
       } catch (error) {
+                this.dialogNotifyError("there are soemthing wrong ");
+
         console.log(error);
       }
     },
@@ -259,7 +265,6 @@ export default {
         userId: this.studentId,
         time: this.newTimer,
       };
-      console.log(lectureData);
       try {
         const res = await Functions.addExtraTime(lectureData);
         this.msg = res.data.msg;
@@ -267,8 +272,11 @@ export default {
         setTimeout(() => {
           this.editTimeDialog = false;
         }, 5000);
-        console.log(res);
+        let msg = `updated succefully`;
+                this.dialogNotifySuccess(msg);
       } catch (error) {
+                this.dialogNotifyError("there are soemthing wrong ");
+
         console.log(error);
       }
     },

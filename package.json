@@ -52,6 +52,7 @@
     "stripe": "^8.117.0",
     "vue": "^2.6.12",
     "vue-screen": "^1.5.3",
+    "vuetify-dialog": "^2.0.15",
     "xss": "^1.0.8",
     "xss-clean": "^0.1.1"
   },

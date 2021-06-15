@@ -108,17 +108,12 @@ export default {
           };
         }
         const res = await Functions.serailDetails(data);
-        console.log(res);
         this.details = res.data.serial;
         this.dialog = true;
-        console.log(this.details);
+        let msg = ` done`;
+        this.dialogNotifySuccess(msg);
       } catch (error) {
-        this.errors = 'your details is wrong '
-          this.alert= true
-        setTimeout(() => {
-          this.alert= false
-          this.errors = null;
-        }, 5000);
+        this.dialogNotifyError("your details is wrong ");
         console.log(error);
       }
     },

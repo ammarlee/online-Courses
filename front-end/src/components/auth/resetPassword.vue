@@ -108,7 +108,7 @@
 </template>
 
 <script>
-import Functions from "../../../server/api"
+import Functions from "../../../server/AuthanticationApi"
 
     export default {
 
@@ -141,9 +141,13 @@ import Functions from "../../../server/api"
             {user:this.user,token:this.token,password:this.password,secPassword:this.secPassword})
            
           this.msg = res.data.msg
+             let msg =res.data.msg
+          this.dialogNotifySuccess(msg)
           this.loading=false
           setTimeout( () => this.$router.push({ path: '/login'}), 5000);
         } catch (error) {
+                  this.dialogNotifyError("there are soemthing wrong ")
+
           this.loading=false
           this.errors=error.response.data.err
           

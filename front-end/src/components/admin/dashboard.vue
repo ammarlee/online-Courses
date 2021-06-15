@@ -62,8 +62,6 @@ export default {
   async mounted() {
     try {
       const res = await Functions.dashboardData();
-      console.log(res);
-
       let dashData = [
         {
           data: res.data.lectures,

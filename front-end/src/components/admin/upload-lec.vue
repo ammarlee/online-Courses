@@ -65,7 +65,7 @@
 </template>
 
 <script>
-import Functions from "../../../server/api";
+import Functions from "../../../server/LecturesApi";
 export default {
   name: "upload-lecture",
   data() {
@@ -111,7 +111,10 @@ export default {
       try {
         const res = await Functions.uploadLecture(formData);
         this.$store.dispatch('addNewLecture',res.data);
+      let msg = ` uploaded successuflly`;
+        this.dialogNotifySuccess(msg);
       } catch (error) {
+        this.dialogNotifyError("someth wrong ");
         console.log(error);
       }
     },

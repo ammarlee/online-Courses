@@ -76,7 +76,8 @@
 </template>
 
 <script>
-import Functions from "../../../server/api";
+import Functions from "../../../server/ExamsApi";
+import studentApi from "../../../server/StudentsApi";
 import examsModel from '../includes/examClone';
 export default {
   name: "singleExame",
@@ -130,7 +131,7 @@ export default {
     },
     async getdata() {
       try {
-        let res = await Functions.getStudentData();
+        let res = await studentApi.getStudentData();
         console.log(res.data.student.exams);
       } catch (error) {
         console.log(error);

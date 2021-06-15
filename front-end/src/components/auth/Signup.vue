@@ -128,7 +128,7 @@
   </div>
 </template>
 <script>
-import Functions from "../../../server/api";
+import Functions from "../../../server/AuthanticationApi";
 export default {
   data() {
     return {
@@ -201,22 +201,13 @@ export default {
         let res = await Functions.signup({ ...this.user });
         this.isLoading = false;
         if (res.status == "200") {
-          this.sweetAlert(
-            "success",
-            `hello ${res.data.user.name}`,
-            2000,
-            "top"
-          );
+          let msg =`hello ${res.data.user.name}`
+           this.dialogNotifySuccess(msg)
           this.$store.dispatch("setUserData", res);
           this.$router.push("/");
         }
-      } catch (error) {
-        this.sweetAlert(
-          "error",
-          "your email and name should be unique",
-          "4000",
-          "center"
-        );
+      } catch (error) { 
+        this.dialogNotifyError("your email and name should be unique")
         this.errors = error.response.data.msg;
         this.isLoading = false;
         this.loading = false;

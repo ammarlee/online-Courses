@@ -9,7 +9,6 @@
       title="create new lecturess"
       :lectures="lectures"
       :lectureList=" ['chapter','lesson','date','attendce','actions']"
-      :deleteItemConfirm="deleteItemConfirm"
       :deleteLecture="deleteLecture"
       :editLecture="editLecture"
       :refsImg="refsImg"
@@ -185,8 +184,8 @@ export default {
     
   },
   methods: {
-     deleteItemConfirm(id) {
-       this.$dialog.info({
+     deleteLecture(id) {
+       this.$dialog.warning({
         text: "are you  sure ?",
         title: "delete",
         persistent: true,

@@ -40,11 +40,11 @@
       </v-sheet>
     </div>
     <!-- second slide   -->
-    {{alert}}
+
     <v-sheet class="mx-auto" elevation="8" max-width="1000" min-height="200">
       <h1 class="text-center text-capitalize info--text pa-5">lectures</h1>
       <v-slide-group v-model="model2" class="pa-4" show-arrows>
-        <v-slide-item v-for="n in 8" :key="n" v-slot="{ active, toggle }">
+        <v-slide-item v-for="n in chapters" :key="n" v-slot="{ active, toggle }">
           <v-card
             :color="active ? 'primary' : 'grey lighten-1'"
             class="ma-4"
@@ -144,6 +144,7 @@ export default {
       alertError: null,
       model: null,
       model2: null,
+      chapters: [],
       dialog: false,
       secretNumber: "",
       lectureId: null,
@@ -152,21 +153,31 @@ export default {
 
   async mounted() {
     const res = await Functions.getAllLectures();
+    console.log(res);
     this.lectures = res.data.lectures;
+    let Editchapters = this.lectures.map((i) => {
+      return i.chapter;
+    });
+    let chapters = new Set(Editchapters);
+    chapters.forEach((value) => {
+      this.chapters.push(+value);
+    });
+    this.chapters.sort((a, b) => {
+      return a - b;
+    });
   },
   methods: {
-    isValidInput(){
-      let s 
-      if(this.secretNumber.length < 13){
-        s= false
-      }else{
-        s=true
+    isValidInput() {
+      let s;
+      if (this.secretNumber.length < 13) {
+        s = false;
+      } else {
+        s = true;
       }
-      return s
+      return s;
     },
     async submitPayment() {
       try {
-
         let paymentData = {
           serialNumber: this.secretNumber,
           studentId: "606addb663cfb021ac7375c2",
@@ -177,41 +188,39 @@ export default {
         console.log(res);
         this.$router.push(`/lecture/${this.lectureId}`);
       } catch (error) {
-        this.dialogNotifyError('invalide number')
+        this.dialogNotifyError("invalide number");
         console.log(error);
       }
     },
     msToTime(duration) {
-        var milliseconds = parseInt((duration % 1000) / 100),
-          seconds = Math.floor((duration / 1000) % 60),
-          minutes = Math.floor((duration / (1000 * 60)) % 60),
-          hours = Math.floor((duration / (1000 * 60 * 60)) % 24);
+      var milliseconds = parseInt((duration % 1000) / 100),
+        seconds = Math.floor((duration / 1000) % 60),
+        minutes = Math.floor((duration / (1000 * 60)) % 60),
+        hours = Math.floor((duration / (1000 * 60 * 60)) % 24);
 
-        hours = hours < 10 ? "0" + hours : hours;
-        minutes = minutes < 10 ? "0" + minutes : minutes;
-        seconds = seconds < 10 ? "0" + seconds : seconds;
+      hours = hours < 10 ? "0" + hours : hours;
+      minutes = minutes < 10 ? "0" + minutes : minutes;
+      seconds = seconds < 10 ? "0" + seconds : seconds;
 
-        return hours + ":" + minutes + ":" + seconds + "." + milliseconds;
-      },
-      IsUserAuthanticated(){
-          if (!this.currentUser) {  
+      return hours + ":" + minutes + ":" + seconds + "." + milliseconds;
+    },
+    IsUserAuthanticated() {
+      if (!this.currentUser) {
         this.$router.push("/login");
-        return
+        return;
       }
-
-      },
-      getAttendeceStudent(userId,lecture){
-        let student = lecture.StudentAttendance.find((i) => {
-          return i.studentId.toString() == userId.toString();
-        });
-        return student
-        
-      },
+    },
+    getAttendeceStudent(userId, lecture) {
+      let student = lecture.StudentAttendance.find((i) => {
+        return i.studentId.toString() == userId.toString();
+      });
+      return student;
+    },
 
     async goToLecture(id) {
       // test local with store data
 
-     this.IsUserAuthanticated()
+      this.IsUserAuthanticated();
       this.lectureId = id;
       const userId = this.currentUser._id;
       let lecture = this.lectures.find((i) => {
@@ -221,52 +230,47 @@ export default {
       // const endTime = new Date(new Date().getTime() + 30 * 60000);
 
       if (lecture.free === false) {
-          let student=  this.getAttendeceStudent(userId,lecture)
+        let student = this.getAttendeceStudent(userId, lecture);
 
         if (!student) {
           this.dialog = true;
-          return
+          return;
         }
-          let StartingTime =
-            new Date(student.endTime).getTime() -
-            new Date().getTime();
-            console.log(StartingTime);
-          let remaind = Math.round(StartingTime);
-          console.log(remaind);
-          if (remaind <= 0) {
-            console.log("your time is over");
-            this.dialog = true;
-          } else {
-            let remainTime = this.msToTime(StartingTime); // "4:59"
-            console.log(remainTime);
-            this.$store.dispatch("remainingTime", student.endTime);
-            this.$store.dispatch("singleLecture", lecture);
-            this.$router.push("/lecture/" + id);
-          }
-        
+        let StartingTime =
+          new Date(student.endTime).getTime() - new Date().getTime();
+        console.log(StartingTime);
+        let remaind = Math.round(StartingTime);
+        console.log(remaind);
+        if (remaind <= 0) {
+          console.log("your time is over");
+          this.dialog = true;
+        } else {
+          let remainTime = this.msToTime(StartingTime); // "4:59"
+          console.log(remainTime);
+          this.$store.dispatch("remainingTime", student.endTime);
+          this.$store.dispatch("singleLecture", lecture);
+          this.$router.push("/lecture/" + id);
+        }
       } else {
-         let student=  this.getAttendeceStudent(userId,lecture)
+        let student = this.getAttendeceStudent(userId, lecture);
         if (!student) {
           this.$router.push("/lecture/" + id);
-          return
+          return;
         }
 
-          let StartingTime =
-            new Date(student.endTime).getTime() -
-            new Date().getTime();
-          let remaind = Math.round(StartingTime);
+        let StartingTime =
+          new Date(student.endTime).getTime() - new Date().getTime();
+        let remaind = Math.round(StartingTime);
 
-          if (remaind <= 0) {
-            console.log("your time is over");
-            this.dialog = true;
-          } else {
-            let remainTime = this.msToTime(StartingTime); // "4:59"
-            console.log(remainTime);
-            console.log("your time is over");
-            this.dialog = true;
-          }
-        
-      
+        if (remaind <= 0) {
+          console.log("your time is over");
+          this.dialog = true;
+        } else {
+          let remainTime = this.msToTime(StartingTime); // "4:59"
+          console.log(remainTime);
+          console.log("your time is over");
+          this.dialog = true;
+        }
       }
     },
   },

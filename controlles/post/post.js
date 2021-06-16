@@ -310,15 +310,15 @@ exports.getAllQuestions = async (req, res, next) => {
     res.status(400).json({ error: error });
   }
 };
+
 exports.correctExame = async (req, res, next) => {
-  const { exameId, questions } = req.body;
+  const { exameId, questions,studentId } = req.body;
   try {
     const exame = await Exams.findOne({ _id: exameId }).populate({
       path: "questions.QuestionId",
       select: "question  answers groupAnswer rightAnswer",
       model: "Questions",
     });
-    console.log(exame.questions[0]);
     let che = exame.questions.map((one) => {
       return {
         questionId: one._id,
@@ -327,21 +327,21 @@ exports.correctExame = async (req, res, next) => {
       };
     });
     let result = 0;
-    let corrQ = [];
-    let errorQ = [];
+    let correctQuestions = [];
+    let errorQuestions = [];
     questions.forEach((one, index) => {
       if (che[index].questionId == one._id) {
         if (che[index].correctOne == one.QuestionId.groupAnswer) {
           result++;
-          corrQ.push(one.QuestionId);
+          correctQuestions.push(one.QuestionId);
         } else {
-          errorQ.push({ ...one.QuestionId, le: che[index].comment[0].a });
+          errorQuestions.push({ ...one.QuestionId, le: che[index].comment[0].a });
         }
       }
     });
     // add the exame model to the student
     const student = await Student.findByIdAndUpdate(
-      { _id: "606addb663cfb021ac7375c2" },
+      { _id: studentId },
       {
         $push: {
           exams: { date: new Date().toISOString(), result, exameModel: exame },
@@ -352,7 +352,7 @@ exports.correctExame = async (req, res, next) => {
 
     res
       .status(200)
-      .json({ result: `${result}`, fullMarks: che.length, corrQ, errorQ });
+      .json({ result: `${result}`, fullMarks: che.length, correctQuestions, errorQuestions });
   } catch (error) {
     console.log(error);
     res.status(400).json({ error: error });
@@ -365,17 +365,22 @@ exports.createExam = async (req, res, next) => {
     //  them and create exame with them then i
     // will return that exams to to student
     console.log(chapter);
-    const getchapterQuestions = await Questions.aggregate([
+    const getChapterQuestions = await Questions.aggregate([
       { $match: { chapter: chapter } },
       { $group: { _id: "$_id" } },
       { $sample: { size: 20 } },
     ]);
-    // console.log(getchapterQuestions);
-    // console.log(new Set(getchapterQuestions));
+    console.log(getChapterQuestions);
+    // console.log(new Set(getChapterQuestions));
+    if(getChapterQuestions.length ==0){
+   return res.status(201).json({msg:'there are not a exams for that chapter'});
 
-    let editQuestion = getchapterQuestions.map((item) => {
+    }
+
+    let editQuestion = getChapterQuestions.map((item) => {
       return { QuestionId: item._id };
     });
+    console.log(editQuestion);
     // 2- create the exam
     // const newExame = new Exams({ questions: editQuestion ,chapter})
     // await newExame.save();
@@ -844,11 +849,9 @@ exports.getAllExams = async (req, res, next) => {
 };
 exports.getAllLectures = async (req, res, next) => {
   try {
-    const lectures = await Lec.find(
-      {}
-      // { text: 1, chapter: 1, duration: 1 ,free:1}
-    ).lean();
-    res.status(200).json({ lectures });
+    const lectures = await Lec.find({}).lean();
+       res.status(200).json({ lectures });
+       
   } catch (error) {
     res.status(400).json(error);
   }
@@ -1114,6 +1117,7 @@ exports.getStudentData = async (req, res, next) => {
 
 exports.printToPdf = async (req, res, next) => {
   const { exameId, userId } = req.body;
+  console.log( exameId, userId);
 
   try {
     const user = await Student.findOne({ _id: userId }, { exams: 1 })
@@ -1123,81 +1127,83 @@ exports.printToPdf = async (req, res, next) => {
         model: "Questions",
       })
       .exec();
+      console.log(user.exams);
     let s = user.exams.filter((i) => {
       return i._id.toString() == exameId.toString();
     });
-    const name = "exame_" + exameId + ".pdf";
-    var dir = path.join("./public");
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir);
-    }
-    const pathName = path.join(__dirname, "../", "../", dir, name);
-    // const pathName = path.join(
-    //   __dirname,
-    //   "../",
-    //   "../",
-    //   "front-end/",
-    //   dir,
-    //   name
-    // );
-    const pdfDoc = new PDFDocument();
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Content-Disposition", 'inline;filename="' + name + '" ');
+    console.log(s);
+    // const name = "exame_" + exameId + ".pdf";
+    // var dir = path.join("./public");
+    // if (!fs.existsSync(dir)) {
+    //   fs.mkdirSync(dir);
+    // }
+    // const pathName = path.join(__dirname, "../", "../", dir, name);
+    // // const pathName = path.join(
+    // //   __dirname,
+    // //   "../",
+    // //   "../",
+    // //   "front-end/",
+    // //   dir,
+    // //   name
+    // // );
+    // const pdfDoc = new PDFDocument();
+    // res.setHeader("Content-Type", "application/pdf");
+    // res.setHeader("Content-Disposition", 'inline;filename="' + name + '" ');
 
-    pdfDoc.pipe(fs.createWriteStream(pathName));
-    pdfDoc.pipe(res);
-    pdfDoc
-      .fontSize(22)
-      .fillColor("green")
-      .text("exame  ", { align: "center", textIndent: true });
-    pdfDoc
-      .fontSize(18)
-      .text(`chapter :${s[0].exameModel[0].chapter} (result :${s[0].result})`, {
-        align: "center",
-        underline: true,
-      });
-    // pdfDoc.fillColor('black').text(`_______________________`)
+    // pdfDoc.pipe(fs.createWriteStream(pathName));
+    // pdfDoc.pipe(res);
+    // pdfDoc
+    //   .fontSize(22)
+    //   .fillColor("green")
+    //   .text("exame  ", { align: "center", textIndent: true });
+    // pdfDoc
+    //   .fontSize(18)
+    //   .text(`chapter :${s[0].exameModel[0].chapter} (result :${s[0].result})`, {
+    //     align: "center",
+    //     underline: true,
+    //   });
+    // // pdfDoc.fillColor('black').text(`_______________________`)
 
-    s[0].exameModel.forEach((item) => {
-      item.questions.forEach((one, n) => {
-        pdfDoc
-          .fontSize(15)
-          .fillColor("red")
-          .text(` ${n}:${one.QuestionId.question}`);
-        one.QuestionId.answers.forEach((two) => {
-          pdfDoc
-            .fontSize(12)
-            .fillColor("blue")
-            .list([`${two.a}`]);
-        });
-      });
-      pdfDoc
-        .fontSize(18)
-        .fillColor("blue")
-        .text(`results`, { align: "center", underline: true });
-      item.questions.forEach((one, n) => {
-        one.QuestionId.answers.filter((two) => {
-          if (two.correct == true) {
-            pdfDoc
-              .fontSize(14)
-              .fillColor("red")
-              .text(`${n} >(${two.a})`, { underline: true });
-          }
-        });
-      });
-    });
-    console.log(pathName);
+    // s[0].exameModel.forEach((item) => {
+    //   item.questions.forEach((one, n) => {
+    //     pdfDoc
+    //       .fontSize(15)
+    //       .fillColor("red")
+    //       .text(` ${n}:${one.QuestionId.question}`);
+    //     one.QuestionId.answers.forEach((two) => {
+    //       pdfDoc
+    //         .fontSize(12)
+    //         .fillColor("blue")
+    //         .list([`${two.a}`]);
+    //     });
+    //   });
+    //   pdfDoc
+    //     .fontSize(18)
+    //     .fillColor("blue")
+    //     .text(`results`, { align: "center", underline: true });
+    //   item.questions.forEach((one, n) => {
+    //     one.QuestionId.answers.filter((two) => {
+    //       if (two.correct == true) {
+    //         pdfDoc
+    //           .fontSize(14)
+    //           .fillColor("red")
+    //           .text(`${n} >(${two.a})`, { underline: true });
+    //       }
+    //     });
+    //   });
+    // });
+    // console.log(pathName);
 
-    clody.uploadPdf(pathName).then((result) => {
-      const pdfFile = {
-        pdfUrl: result.url,
-        pdfId: result.id,
-      };
-      console.log("pdf results--", pdfFile.pdfUrl);
-    });
-    pdfDoc.end();
+    // clody.uploadPdf(pathName).then((result) => {
+    //   const pdfFile = {
+    //     pdfUrl: result.url,
+    //     pdfId: result.id,
+    //   };
+    //   console.log("pdf results--", pdfFile.pdfUrl);
+    // });
+    // pdfDoc.end();
 
-    res.status(200);
+    res.status(200).json({exam :s });
   } catch (error) {
     console.log(error);
     res.status(400).json({ error });

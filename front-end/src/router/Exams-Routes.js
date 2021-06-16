@@ -24,7 +24,6 @@ export default [
     components: {
       default:()=>{ return import("@/components/student/exams")},
       header: header,
-      
       carsoul,
       footer: footer,
     },
@@ -36,7 +35,15 @@ export default [
     beforeEnter:guardPage,
     components: {
       default:()=>{ return import("@/components/student/singleExame")},
-      footer: footer,
+      // footer: footer,
+    },
+  },
+  {
+    path: "/printExam/:id",
+    name: "printExam",
+    beforeEnter:guardPage,
+    components: {
+      default:()=>{ return import("@/components/student/Print-Exam")},
     },
   },
  

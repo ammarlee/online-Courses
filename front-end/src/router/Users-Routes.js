@@ -25,5 +25,15 @@ export default [
           footer: footer,
         },
       },
+      {
+        path: "/files",
+        name: "files",
+        beforeEnter:guardPage,
+        components: {
+          default:()=>{ return import("@/components/student/Files")},
+          header: header,
+          footer: footer,
+        },
+      },
       
 ]

@@ -6,11 +6,11 @@ import header from "@/components/includes/navbar";
 import carsoul from "@/components/includes/carsoul";
 import footer from "@/components/includes/footer";
 // ALL ROUTES 
-import AdminRoutes from "./Admin-Routes"
-import AuthanticationRoutes from "./Authantication-Routes"
-import lectureRoutes from "./Lectures-Routes"
-import ExamsRoutes from "./Exams-Routes"
-import UsersRoutes from "./Users-Routes"
+import AdminRoutes from "./Admin-Routers"
+import AuthanticationRoutes from "./Authantication-Routers"
+import lectureRoutes from "./Lectures-Routers"
+import ExamsRoutes from "./Exams-Routers"
+import UsersRoutes from "./Users-Routers"
 Vue.use(VueRouter);
 
 const routes = [
@@ -24,6 +24,7 @@ const routes = [
       carsoul
     },
   },
+  
   ...AdminRoutes,
   ...AuthanticationRoutes,
   ...ExamsRoutes,

@@ -78,6 +78,9 @@ const mutations = {
 
 }
 const actions = {
+  updateNotification({commit},payload){
+    commit('updateNotification',payload)
+  },
     setUser({ commit }, user) {
         commit("setUser", user);
       },

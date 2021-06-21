@@ -3,29 +3,24 @@
     <!-- HEADERS  -->
     <div v-if="examingMode" class="text-center">
       <h1>
-        exams for chapter
-        <br />
-        <span class="rounded-lg py-2 px-4 white--text success">
-        {{$route.params.id}}
-
-        </span>
+        start exam for chapter
+        <span class="py-2 px-4 pink--text">{{$route.params.id}}</span>
       </h1>
-      <v-btn class="pink ma-6 white--text pa-6" @click="startExam">
-        <v-icon class large>mdi-clock-start</v-icon>start exam
+      <v-btn icon class="ma-6 pa-6" @click="startExam">
+        <v-icon large color="success">mdi-clock-start</v-icon>
       </v-btn>
       <v-divider class="mb-5"></v-divider>
     </div>
 
     <div>
       <div v-if="timer" class="mb-10 text-center pink--text text-capitalize font-weight-bold">
-        <h1 class="rounded-lg px-6 py-3 d-inline-block  grey lighten-3 orange--text">{{timer}}</h1>
+        <h1 class="rounded-lg px-6 py-3 d-inline-block grey lighten-3 orange--text">{{timer}}</h1>
         <v-divider></v-divider>
       </div>
 
       <div v-if="timer">
         <v-row>
           <v-col cols="6" class="ml-1 round-lg" v-if="exam">
-           
             <examsModel :exam="exam" :readonly="sendfalse"></examsModel>
           </v-col>
           <v-col hidden cols="6" class="black white--text">right one</v-col>
@@ -35,15 +30,14 @@
           <v-btn class="pink ma-3 white--text" @click="sendTheExame()">finish exame</v-btn>
         </div>
       </div>
+      
       <!-- dialog for answers  -->
       <v-dialog v-model="dialog" width="800">
         <v-card v-if="!showResult">
-          <v-card-title class="headline grey pink--text text-capitalize lighten-2">
-            your answers
-          </v-card-title>
+          <v-card-title class="headline grey pink--text text-capitalize lighten-2">your answers</v-card-title>
           <v-row>
             <v-col cols="12" class="ml-1 round-lg" v-if="exam">
-            <examsModel :exam="exam" readonly='true'></examsModel>
+              <examsModel :exam="exam" readonly="true"></examsModel>
             </v-col>
           </v-row>
           <v-card-actions>
@@ -53,7 +47,7 @@
         </v-card>
         <v-card v-else>
           <div class="pa-5">
-            <h2 class="text-center  text-capitalize font-weight-bold green--text">result</h2>
+            <h2 class="text-center text-capitalize font-weight-bold green--text">result</h2>
             <div class="text-center my-5">
               <v-progress-circular
                 :rotate="360"
@@ -64,8 +58,8 @@
               >{{result * 10}}</v-progress-circular>
             </div>
 
-            <v-card-actions >
-              <v-btn class="info mx-auto d-block "  text @click="repeat">repeat</v-btn>
+            <v-card-actions>
+              <v-btn class="info mx-auto d-block" text @click="repeat">repeat</v-btn>
             </v-card-actions>
           </div>
         </v-card>
@@ -78,7 +72,7 @@
 <script>
 import Functions from "../../../server/ExamsApi";
 import studentApi from "../../../server/StudentsApi";
-import examsModel from '../includes/examClone';
+import examsModel from "../includes/examClone";
 export default {
   name: "singleExame",
   components: {
@@ -87,7 +81,7 @@ export default {
   data() {
     return {
       timer: false,
-      sendfalse:false,
+      sendfalse: false,
       examingMode: true,
       showResult: false,
       fullMarks: null,
@@ -100,34 +94,49 @@ export default {
     };
   },
   mounted() {
-    this.getUserLocation()
-    console.log(this.$route.path);
-    this.reload()},
+    this.getUserLocation();
+    this.reload();
+  },
+  beforeRouteLeave(to, from, next) {
+   console.log(to,from);
+   let confirmed = confirm('are you sure you want to leave the page ')
+   if (confirmed) {
+     next();
+     
+   }
+
+  },
   computed: {
     mainTimer() {
       return this.$store.getters.timer;
     },
   },
   methods: {
-    showtheResult (){
+    showtheResult() {
       this.showResult = true;
       setTimeout(() => {
-        this.$router.push('/exams')
+        this.$router.push("/exams");
       }, 3000);
     },
     async reload() {
       try {
         let chapter = this.$route.params.id;
         const res = await Functions.createChapterExame({ chapter });
+        if (res.status == 201) {
+          this.dialogNotifyError(res.data.msg);
+          setTimeout(() => {
+            this.$router.push("/exams");
+          }, 1000);
+          return;
+        }
         this.exam = res.data.exam[0];
-        console.log(this.exam.questions);
         this.soultionModel = res.data.exam[0];
       } catch (error) {
         console.log(error);
       }
     },
     repeat() {
-    this.$router.push('/')   
+      this.$router.push("/exams");
     },
     async getdata() {
       try {
@@ -149,13 +158,12 @@ export default {
       try {
         this.timer = false;
         this.$store.commit("setTimer", null);
-        let res = await Functions.sendTheExame(this.exam);
-        this.corrQ = res.data.corrQ;
-        this.errorQ = res.data.errorQ;
+        let res = await Functions.sendTheExame({...this.exam,studentId:this.currentUser._id});
+        this.corrQ = res.data.correctQuestions;
+        this.errorQ = res.data.errorQuestions;
         this.result = res.data.result;
         this.fullMarks = res.data.fullMarks;
         this.dialog = true;
-        // this.showResult =true
 
         this.exam.questions.forEach((question) => {
           this.errorQ.forEach((a) => {

@@ -13,7 +13,7 @@
         </v-btn>
       </div>
       <div slot="questionError" v-if="!questions">
-        <v-alert type="error" class="text-capitalize" outlined>you have not any question yet</v-alert>
+        <v-alert type="error" class="text-capitalize" outlined dense>you have not any question yet</v-alert>
       </div>
     </app-table>
     <v-dialog v-model="dialogCreated">
@@ -25,23 +25,23 @@
 
         <v-card-text>
           <v-container>
-            <v-row>
-              <v-col cols="12" sm="6" md="6">
-                <v-text-field v-model="question.chapter" outlined label=" chapter"></v-text-field>
+            <v-row dense>
+              <v-col cols="12" sm="3" >
+                <v-text-field v-model="question.chapter" outlined dense label=" chapter"></v-text-field>
               </v-col>
-              <v-col cols="12" sm="6" md="6">
-                <v-text-field v-model="question.lesson" outlined label=" lesson"></v-text-field>
+              <v-col cols="12" sm="3" >
+                <v-text-field v-model="question.lesson" outlined dense label=" lesson"></v-text-field>
               </v-col>
-              <v-col cols="12" sm="6" md="6">
+              <v-col cols="12" sm="3" >
                 <v-text-field
                   v-model="question.fullMarks"
-                  outlined
+                  outlined dense
                   type="number"
                   label=" fullMarks"
                 ></v-text-field>
               </v-col>
-              <v-col cols="12" sm="6" md="6">
-                <v-text-field v-model="question.duration" outlined type="number" label=" duration"></v-text-field>
+              <v-col cols="12" sm="3" >
+                <v-text-field v-model="question.duration" outlined dense type="number" label=" duration"></v-text-field>
               </v-col>
               <!-- questions -->
               <v-col cols="12" sm="12" md="12">
@@ -49,7 +49,7 @@
                   v-model="question.question"
                   append-icon="mdi-camera"
                   @click:append="refsImg"
-                  outlined
+                  outlined dense
                   label=" question"
                 ></v-text-field>
 
@@ -65,12 +65,12 @@
                 <v-img v-if="question.image" :src='question.image'></v-img>
               </div>
               <!-- answer a -->
-              <v-col cols="12" id="btn-a" class="d-flex justify-space-between">
-                <v-textarea
+              <v-col cols="12" sm="6" id="btn-a" class="d-flex justify-space-between">
+                <v-textarea  rows="3"
                   v-model="question.answers.a.a"
                   append-icon="mdi-camera"
                   @click:append="refsImg"
-                  outlined
+                  outlined dense
                   label="answers.a"
                 ></v-textarea>
                 <div>
@@ -92,12 +92,12 @@
               </div>
               </v-col>
               <!-- answer b-->
-              <v-col cols="12" id="btn-b" class="d-flex justify-space-between">
-                <v-textarea
+              <v-col cols="12" sm="6" id="btn-b" class="d-flex justify-space-between">
+                <v-textarea  rows="3"
                   append-icon="mdi-camera"
                   @click:append="refsImg"
                   v-model="question.answers.b.a"
-                  outlined
+                  outlined dense
                   label="answers.b"
                 ></v-textarea>
                 <div>
@@ -118,12 +118,12 @@
               </div> 
               </v-col>
               <!-- answer c-->
-              <v-col cols="12" id="btn-c" class="d-flex justify-space-between">
-                <v-textarea
+              <v-col cols="12" sm="6" id="btn-c" class="d-flex justify-space-between">
+                <v-textarea  rows="3"
                   append-icon="mdi-camera"
                   @click:append="refsImg"
                   v-model="question.answers.c.a"
-                  outlined
+                  outlined dense
                   label="answers.c"
                 ></v-textarea>
                 <div>
@@ -144,12 +144,12 @@
               </div>
               </v-col>
               <!-- answer d-->
-              <v-col cols="12" id="btn-d" class="d-flex justify-space-between">
-                <v-textarea
+              <v-col cols="12" sm="6" id="btn-d" class="d-flex justify-space-between">
+                <v-textarea  rows="3"
                   append-icon="mdi-camera"
                   @click:append="refsImg"
                   v-model="question.answers.d.a"
-                  outlined
+                  outlined dense
                   label="answers.d"
                 ></v-textarea>
                 <div>

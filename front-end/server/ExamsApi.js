@@ -13,12 +13,12 @@ static   createChapterExame(data){
 }
 static   sendTheExame(data){
     return  axios().post(`send-exame-to-correction`,
-    {chapter:data.chapterm,exameId:data._id,questions:data.questions
+    {chapter:data.chapterm,exameId:data._id,questions:data.questions,studentId:data.studentId
     })
 }
 static   examPdf(data){
     return  axios().post(`exame-pdf`,
-    {exameId:data.id,userId:data.userId })
+    {exameId:data.exameId,userId:data.userId })
 }
 
 

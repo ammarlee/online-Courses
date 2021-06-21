@@ -27,17 +27,7 @@ export default [
         },
       },
       //  for the pdf page
-      {
-        path: "/pdf/:id",
-        name: "pdf",
-        beforeEnter:guardPage,
-        components: {
-          default:()=>{ return import("@/components/student/pdf-page")},
-          header: header,
-        carsoul
-   ,       footer: footer,
-        },
-      },
+    
       {
         path: "/lectures",
         name: "allLectures",

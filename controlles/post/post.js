@@ -9,10 +9,11 @@ const Lec = require("../../models/lectures");
 const Student = require("../../models/students");
 const clody = require("../cloud");
 const io = require("../../socket");
-const PDFDocument = require("pdfkit");
 const algoliasearch = require("algoliasearch");
 const client = algoliasearch("5AX3QTWUTZ", "51ba31f56313488518c91d7571cddcde");
+
 const index = client.initIndex("facebook");
+const PDFDocument = require("pdfkit");
 const Moment = require("moment");
 // ______________________________________
 // FUNCTION FOR EDIT THE TIEME
@@ -128,38 +129,13 @@ exports.updateLectures = async (req, res, next) => {
     res.status(404).json(error);
   }
 };
-exports.notificationSeen = async (req, res, next) => {
-  console.log(req.body);
-  const userId = req.body.userId;
-  const notificationId = req.body.item._id;
 
-  try {
-    let user = await Student.updateOne(
-      { _id: userId, "notifications._id": notificationId },
-      { $set: { "notifications.$.seen": true } },
-      { new: true }
-    );
-    // console.log(user);
-    if (user.nModified === 1) {
-      res.status(200).json({ user, msg: "updated" });
-    } else {
-      console.log("not modified");
-      res.status(201).json({ user, msg: "not updated" });
-    }
-  } catch (error) {
-    console.log(error);
-    res.status(404).json(error);
-  }
-};
 exports.updateQuestions = async (req, res, next) => {
   try {
     let s = JSON.parse(req.body.data);
     let { question, duration, chapter, _id, fullMarks, lesson } = s;
     let answers = s.answers;
     let files = req.files;
-    console.log(s);
-    console.log("//////////////");
-    console.log(answers);
     if (files) {
       const uploader = async (path) => await clody.uploadImg(path);
       let questionImg, imga, imgb, imgc, imgd;
@@ -234,8 +210,6 @@ exports.updateQuestions = async (req, res, next) => {
         { rightAnswer: findCorrectOne[0]._id },
         { new: true, rawResult: true }
       );
-
-      // await newExame.save();
       res.status(200).json({ afterEdit, msg: "you have edit is succefully" });
     } else {
       let questionedited = await Questions.findOneAndUpdate(
@@ -310,15 +284,15 @@ exports.getAllQuestions = async (req, res, next) => {
     res.status(400).json({ error: error });
   }
 };
+
 exports.correctExame = async (req, res, next) => {
-  const { exameId, questions } = req.body;
+  const { exameId, questions, studentId } = req.body;
   try {
     const exame = await Exams.findOne({ _id: exameId }).populate({
       path: "questions.QuestionId",
       select: "question  answers groupAnswer rightAnswer",
       model: "Questions",
     });
-    console.log(exame.questions[0]);
     let che = exame.questions.map((one) => {
       return {
         questionId: one._id,
@@ -327,21 +301,24 @@ exports.correctExame = async (req, res, next) => {
       };
     });
     let result = 0;
-    let corrQ = [];
-    let errorQ = [];
+    let correctQuestions = [];
+    let errorQuestions = [];
     questions.forEach((one, index) => {
       if (che[index].questionId == one._id) {
         if (che[index].correctOne == one.QuestionId.groupAnswer) {
           result++;
-          corrQ.push(one.QuestionId);
+          correctQuestions.push(one.QuestionId);
         } else {
-          errorQ.push({ ...one.QuestionId, le: che[index].comment[0].a });
+          errorQuestions.push({
+            ...one.QuestionId,
+            le: che[index].comment[0].a,
+          });
         }
       }
     });
     // add the exame model to the student
     const student = await Student.findByIdAndUpdate(
-      { _id: "606addb663cfb021ac7375c2" },
+      { _id: studentId },
       {
         $push: {
           exams: { date: new Date().toISOString(), result, exameModel: exame },
@@ -352,7 +329,12 @@ exports.correctExame = async (req, res, next) => {
 
     res
       .status(200)
-      .json({ result: `${result}`, fullMarks: che.length, corrQ, errorQ });
+      .json({
+        result: `${result}`,
+        fullMarks: che.length,
+        correctQuestions,
+        errorQuestions,
+      });
   } catch (error) {
     console.log(error);
     res.status(400).json({ error: error });
@@ -365,17 +347,23 @@ exports.createExam = async (req, res, next) => {
     //  them and create exame with them then i
     // will return that exams to to student
     console.log(chapter);
-    const getchapterQuestions = await Questions.aggregate([
+    const getChapterQuestions = await Questions.aggregate([
       { $match: { chapter: chapter } },
       { $group: { _id: "$_id" } },
       { $sample: { size: 20 } },
     ]);
-    // console.log(getchapterQuestions);
-    // console.log(new Set(getchapterQuestions));
+    console.log(getChapterQuestions);
+    // console.log(new Set(getChapterQuestions));
+    if (getChapterQuestions.length == 0) {
+      return res
+        .status(201)
+        .json({ msg: "there are not a exams for that chapter" });
+    }
 
-    let editQuestion = getchapterQuestions.map((item) => {
+    let editQuestion = getChapterQuestions.map((item) => {
       return { QuestionId: item._id };
     });
+    console.log(editQuestion);
     // 2- create the exam
     // const newExame = new Exams({ questions: editQuestion ,chapter})
     // await newExame.save();
@@ -476,23 +464,20 @@ exports.deleteUnactiveStudent = async (req, res, next) => {
     res.status(400).json(error);
   }
 };
-exports.updateProfile=async (req, res, next) => {
-  const {_id, name, email,  city, phone, fatherNumber,addres } = req.body
+exports.updateProfile = async (req, res, next) => {
+  const { _id, name, email, city, phone, fatherNumber, addres } = req.body;
   try {
     const user = await Student.findOneAndUpdate(
-      { _id},
-      { name, email,  city, phone, fatherNumber,addres },
+      { _id },
+      { name, email, city, phone, fatherNumber, addres },
       { new: true }
     );
-    return res
-      .status(200)
-      .json({ user, msg: "you have edited your profile" });
-    
+    return res.status(200).json({ user, msg: "you have edited your profile" });
   } catch (error) {
     console.log(error);
     res.status(400).json(error);
   }
-}
+};
 exports.deleteStudent = async (req, res, next) => {
   try {
     // 1- set single user unactive
@@ -510,12 +495,12 @@ exports.deleteStudent = async (req, res, next) => {
 };
 exports.createSerial = async (req, res, next) => {
   try {
-console.log(req.connection);
-const idnew = crypto.randomBytes(13).toString("hex");
+    console.log(req.connection);
+    const idnew = crypto.randomBytes(13).toString("hex");
 
-console.log(idnew);
-    const serialNumber =idnew
-    const CardId = (Math.random() * 1600).toString().split('.')[1]
+    console.log(idnew);
+    const serialNumber = idnew;
+    const CardId = (Math.random() * 1600).toString().split(".")[1];
     const serial = new Ser({ serialNumber, CardId });
 
     await serial.save();
@@ -625,7 +610,7 @@ exports.payLecture = async (req, res, next) => {
   const { serialNumber, studentId, lectureId } = req.body;
   const date = new Date();
   // const endTime = new Date(new Date().getTime() + 5 * 600000);
-  const endTime = new Date(new Date().setMinutes(new Date().getMinutes() +1))
+  const endTime = new Date(new Date().setMinutes(new Date().getMinutes() + 1));
   try {
     // 1- check if the serialNumber is valid or not and
     const serial = await Ser.findOne({ serialNumber: serialNumber });
@@ -641,30 +626,36 @@ exports.payLecture = async (req, res, next) => {
       //  2 - work with lecture
       const lecture = await Lec.findOneAndUpdate(
         { _id: lectureId },
-        {$push: {
-          StudentAttendance: {
-              $each: [ {
-                date,
-                endTime,
-                serialId: serial._id,
-                studentId,
-              }],
-              $position: 0
-          }
-      }},
-       
+        {
+          $push: {
+            StudentAttendance: {
+              $each: [
+                {
+                  date,
+                  endTime,
+                  serialId: serial._id,
+                  studentId,
+                },
+              ],
+              $position: 0,
+            },
+          },
+        },
+
         { new: true, rawResult: true }
       );
       // 3- work with student
       const user = await Student.findOneAndUpdate(
         { _id: studentId },
-        {$push: {
-          lectures: {
-              $each: [ { date, endTime, serialId: serial._id, lectureId }],
-              $position: 0
-          }
-      }},
-      
+        {
+          $push: {
+            lectures: {
+              $each: [{ date, endTime, serialId: serial._id, lectureId }],
+              $position: 0,
+            },
+          },
+        },
+
         { new: true, rawResult: true }
       );
       console.log(user.lastErrorObject.updatedExisting);
@@ -822,32 +813,11 @@ exports.getAbsentStudent = async (req, res, next) => {
     res.status(400).json(error);
   }
 };
-exports.getRandomQuestion = async (req, res, next) => {
-  try {
-    const q = await Questions.aggregate([
-      { $project: { chapter: 1 } },
-      { $sample: { size: 10 } },
-    ]);
 
-    res.status(200).json(q);
-  } catch (error) {
-    res.status(404).json(error);
-  }
-};
-exports.getAllExams = async (req, res, next) => {
-  try {
-    const exams = await Exams.find({}).lean();
-    res.status(200).json({ exams });
-  } catch (error) {
-    res.status(400).json(error);
-  }
-};
+
 exports.getAllLectures = async (req, res, next) => {
   try {
-    const lectures = await Lec.find(
-      {}
-      // { text: 1, chapter: 1, duration: 1 ,free:1}
-    ).lean();
+    const lectures = await Lec.find({}).lean();
     res.status(200).json({ lectures });
   } catch (error) {
     res.status(400).json(error);
@@ -878,59 +848,49 @@ exports.getDashboardData = async (req, res, next) => {
     res.status(400).json(error);
   }
 };
+let isStudentInAttendece = (lecture, userId) => {
+ return lecture.StudentAttendance.find((i) => {
+    return i.studentId.toString() == userId.toString();
+  });
+};
+
 exports.getSingleLecture = async (req, res, next) => {
   try {
     const { lectureId, userId } = req.body;
     const date = new Date();
     const endTime = new Date(new Date().getTime() + 30 * 60000);
     const lecture = await Lec.findOne({ _id: lectureId });
-    if (lecture.free === false) {
-      let findstudentPaid = lecture.StudentAttendance.filter((i) => {
-        return i.studentId.toString() == userId.toString();
-      });
-
-      if (findstudentPaid.length > 0) {
-        let StartingTime =
-          new Date(findstudentPaid[0].endTime).getTime() - new Date().getTime();
-        let remaind = Math.round(StartingTime);
-        if (remaind <= 0) {
-          res.status(402).json({ msg: "your time is over" });
-        } else {
-          let remainTime = msToTime(StartingTime); // "4:59"
-          res.status(200).json({
-            msg: "you still have remain time",
-            remainTime,
-            lecture,
-            remaind: findstudentPaid[0].endTime,
-          });
-        }
+    let getLectureFinishedTime = (student) => {
+ 
+      let StartingTime = new Date(student.endTime).getTime() - new Date().getTime();
+      let remaind = Math.round(StartingTime);
+      if (remaind <= 0) {
+        res.status(402).json({ msg: "your time is over" });
       } else {
-        console.log("you not sign for it before");
+        let remainTime = msToTime(StartingTime); // "4:59"
+        res.status(200).json({
+          msg: "you still have remain time",
+          remainTime,
+          lecture,
+          remaind: student.endTime,
+        });
+      
+    }
+    
+    };
+    let student = isStudentInAttendece(lecture, userId);
+    console.log(student);
+    
+
+    if (lecture.free === false) {
+      if (!student) {
         res.status(402).json({ msg: "you not sign for it beffore" });
       }
+      getLectureFinishedTime(student);
     } else {
-      console.log("its free lecture ");
-
-      let findstudentPaid = lecture.StudentAttendance.filter((i) => {
-        return i.studentId.toString() == userId.toString();
-      });
-      if (findstudentPaid.length > 0) {
-        let StartingTime =
-          new Date(findstudentPaid[0].endTime).getTime() - new Date().getTime();
-        let remaind = Math.round(StartingTime);
-        if (remaind <= 0) {
-          res.status(402).json({ msg: "your time is over" });
-        } else {
-          let remainTime = msToTime(StartingTime); // "4:59"
-          res.status(200).json({
-            msg: "you still have remain time",
-            remainTime,
-            lecture,
-            remaind: findstudentPaid[0].endTime,
-          });
-        }
+      if (student) {
+        getLectureFinishedTime(student);
       } else {
-        console.log("noteeeeee ^^^^");
         const lecture = await Lec.findOneAndUpdate(
           { _id: lectureId },
           {
@@ -944,8 +904,6 @@ exports.getSingleLecture = async (req, res, next) => {
           },
           { new: true }
         );
-        // 16693
-        console.log();
         res.status(200).json({
           remaind: endTime,
           lecture,
@@ -961,11 +919,11 @@ exports.getSingleLecture = async (req, res, next) => {
 exports.getleLectureDetails = async (req, res, next) => {
   try {
     const { lectureId } = req.body;
-    const lecture = await Lec.findOne({ _id: lectureId })
+    const lecture = await Lec.findOne({ _id: lectureId });
     console.log(lecture);
-        res.status(200).json({
-          lecture,
-        });
+    res.status(200).json({
+      lecture,
+    });
   } catch (error) {
     console.log(error);
     res.status(400).json({ error });
@@ -984,7 +942,8 @@ exports.getRemainingTime = async (req, res, next) => {
       new Date(findstudentPaid.endTime).getTime() - new Date().getTime();
     let remaind = Math.round(StartingTime);
     if (remaind <= 0) {
-      res.status(402).json({ msg: "your time is over" });
+      // res.status(402).json({ msg: "your time is over" });
+      res.status(402).send("your time is over!");
     } else {
       let remainTime = msToTime(StartingTime); // "4:59"
       res.status(200).json({
@@ -995,7 +954,8 @@ exports.getRemainingTime = async (req, res, next) => {
       });
     }
   } catch (error) {
-    res.status(404).json({ error });
+    res.status(402).send("Something broke!");
+    // res.status(404).json({ error });
   }
 };
 exports.addExtraTime = async (req, res, next) => {
@@ -1003,16 +963,13 @@ exports.addExtraTime = async (req, res, next) => {
     const { lectureId, userId, time } = req.body;
 
     let currentDate = new Date();
-    let aa = currentDate.setHours(currentDate.getHours() + +time);
-    // let aa = currentDate.setMinutes(currentDate.getMinutes() + +time);
-    console.log(req.body);
-    let newDate = new Date(aa);
+    let countOfExtraTime = currentDate.setHours(currentDate.getHours() + +time);
+    let newDate = new Date(countOfExtraTime);
     const lecture = await Lec.findOneAndUpdate(
       { _id: lectureId, "StudentAttendance.studentId": userId },
       { $set: { "StudentAttendance.$.endTime": newDate } },
       { new: true, rawResult: true }
     );
-    console.log(lecture.lastErrorObject.updatedExisting);
     if (lecture.lastErrorObject.updatedExisting) {
       res.status(200).json({
         msg: `you have added more ${time}h to the student `,
@@ -1079,21 +1036,7 @@ exports.editLecture = async (req, res, next) => {
     res.status(400).json(error);
   }
 };
-exports.getExam = async (req, res, next) => {
-  try {
-    //  - 1 way with populate
-    const exam = await Exams.find({ _id: "6048124dc10c1e32886468bb" })
-      .populate({
-        path: "questions.QuestionId",
-        select: "questions.q",
-        model: "Questions",
-      })
-      .exec();
-    res.status(200).json(exam);
-  } catch (error) {
-    res.status(404).json(error);
-  }
-};
+
 exports.getStudentData = async (req, res, next) => {
   try {
     const id = req.params.id;
@@ -1104,7 +1047,6 @@ exports.getStudentData = async (req, res, next) => {
         model: "Questions",
       })
       .exec();
-    // console.log(student);
     res.status(200).json({ student });
   } catch (error) {
     console.log(error);
@@ -1112,95 +1054,3 @@ exports.getStudentData = async (req, res, next) => {
   }
 };
 
-exports.printToPdf = async (req, res, next) => {
-  const { exameId, userId } = req.body;
-
-  try {
-    const user = await Student.findOne({ _id: userId }, { exams: 1 })
-      .populate({
-        path: "exams.exameModel.questions.QuestionId",
-        select: "question  answers groupAnswer rightAnswer",
-        model: "Questions",
-      })
-      .exec();
-    let s = user.exams.filter((i) => {
-      return i._id.toString() == exameId.toString();
-    });
-    const name = "exame_" + exameId + ".pdf";
-    var dir = path.join("./public");
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir);
-    }
-    const pathName = path.join(__dirname, "../", "../", dir, name);
-    // const pathName = path.join(
-    //   __dirname,
-    //   "../",
-    //   "../",
-    //   "front-end/",
-    //   dir,
-    //   name
-    // );
-    const pdfDoc = new PDFDocument();
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Content-Disposition", 'inline;filename="' + name + '" ');
-
-    pdfDoc.pipe(fs.createWriteStream(pathName));
-    pdfDoc.pipe(res);
-    pdfDoc
-      .fontSize(22)
-      .fillColor("green")
-      .text("exame  ", { align: "center", textIndent: true });
-    pdfDoc
-      .fontSize(18)
-      .text(`chapter :${s[0].exameModel[0].chapter} (result :${s[0].result})`, {
-        align: "center",
-        underline: true,
-      });
-    // pdfDoc.fillColor('black').text(`_______________________`)
-
-    s[0].exameModel.forEach((item) => {
-      item.questions.forEach((one, n) => {
-        pdfDoc
-          .fontSize(15)
-          .fillColor("red")
-          .text(` ${n}:${one.QuestionId.question}`);
-        one.QuestionId.answers.forEach((two) => {
-          pdfDoc
-            .fontSize(12)
-            .fillColor("blue")
-            .list([`${two.a}`]);
-        });
-      });
-      pdfDoc
-        .fontSize(18)
-        .fillColor("blue")
-        .text(`results`, { align: "center", underline: true });
-      item.questions.forEach((one, n) => {
-        one.QuestionId.answers.filter((two) => {
-          if (two.correct == true) {
-            pdfDoc
-              .fontSize(14)
-              .fillColor("red")
-              .text(`${n} >(${two.a})`, { underline: true });
-          }
-        });
-      });
-    });
-    console.log(pathName);
-
-    clody.uploadPdf(pathName).then((result) => {
-      const pdfFile = {
-        pdfUrl: result.url,
-        pdfId: result.id,
-      };
-      console.log("pdf results--", pdfFile.pdfUrl);
-    });
-    pdfDoc.end();
-
-    res.status(200);
-  } catch (error) {
-    console.log(error);
-    res.status(400).json({ error });
-  }
-};
-// -------------- =----------------------------

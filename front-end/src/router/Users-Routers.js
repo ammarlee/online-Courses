@@ -16,11 +16,32 @@ export default [
         },
       },
       {
+        path: "/best",
+        name: "best",
+        components: {
+          default:()=>{ return import("@/components/student/Best")},
+          header: header,
+          footer: footer,
+
+          
+        },
+      },
+      {
         path: "/profile",
         name: "profile",
         beforeEnter:guardPage,
         components: {
           default:()=>{ return import("@/components/student/profile")},
+          header: header,
+          footer: footer,
+        },
+      },
+      {
+        path: "/files",
+        name: "files",
+        beforeEnter:guardPage,
+        components: {
+          default:()=>{ return import("@/components/student/Files")},
           header: header,
           footer: footer,
         },

@@ -1,8 +1,6 @@
 const express = require('express')
 const router = express.Router()
-var jwt = require('jsonwebtoken')
-const Multer=require('../controlles/multer')
-const postController = require('../controlles/post/post')
+const postController = require('../controlles/Students/Students-Controlles')
 const Protect = require('./protect/protect')
 
 
@@ -16,3 +14,5 @@ router.get('/fetch-students',Protect.protect,Protect.restrectTo('admin'),postCon
 router.get('/absent-student',Protect.protect,Protect.restrectTo('admin','guide'),postController.getAbsentStudent)
 router.get('/get-student-data/:id',Protect.protect,Protect.restrectTo('admin','guide','user'),postController.getStudentData)
 
+
+module.exports = router

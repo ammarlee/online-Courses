@@ -152,7 +152,8 @@ export default {
   methods: {
     async navegateTolecture(item){
       try {
-       await Functions.notificationSeen({item,userId:this.getUser._id})
+       let res = await Functions.notificationSeen({item,userId:this.getUser._id})
+       console.log(res);
         this.$store.dispatch('updateNotification',item)
         
         // this.$router.push('/lecture/'+item.lectureId)
@@ -208,7 +209,6 @@ export default {
         {name:'home',icon:'mdi-home-variant-outline',link:'/',title:'home'},
         {name:'lectures',icon:'mdi-home-variant-outline',link:'/lectures',title:'lectures'},
         {name:'exams',icon:'mdi-home-variant-outline',link:'/exams',title:'exams'},
-        {name:'overview',icon:'mdi-home-variant-outline',link:'/overview',title:'overview'},
         {name:'files',icon:'mdi-home-variant-outline',link:'/files',title:'files'},
         {name:'best',icon:'mdi-home-variant-outline',link:'/best',title:'best'},
        

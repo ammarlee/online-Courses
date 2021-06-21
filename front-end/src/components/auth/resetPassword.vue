@@ -3,7 +3,7 @@
     <template>
       <div>
          <router-link to="/login" tag="div"  class="mx-auto text-center ">
-         <v-icon  style="cursor: pointer;font-size: 68px;" >mdi-facebook</v-icon>
+         <v-icon  style="cursor: pointer;font-size: 68px;" >mdi-school</v-icon>
         </router-link>
         <v-card
     class="mx-auto mt-3"

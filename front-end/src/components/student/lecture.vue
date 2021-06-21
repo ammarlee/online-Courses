@@ -1,15 +1,17 @@
 <template>
   <div class="text-center text-capitalize ma-10">
-    <!-- <v-alert type="error" v-if="lectureAlert">your time is over</v-alert> -->
     <div v-if="remainingTime">
       <h1>{{singleLecture.text}}</h1>
       <h3>{{singleLecture.chapter}}</h3>
       <div class="text-center ma-2">
-        <span class="pink pa-3 font-weight-bold text-h5 d-inline-block rounded-lg">{{timer}}</span>
+        <span class="pink pa-3 font-weight-bold text-h5 d-inline-block rounded-lg">{{timer}}
+        </span>
       </div>
+
       <video width="520" height="340" controls>
         <source :src="singleLecture.vedio" type="video/mp4" />
       </video>
+
     </div>
   </div>
 </template>
@@ -33,16 +35,15 @@ export default {
         userId: this.currentUser._id,
         lectureId: this.$route.params.id,
       };
-      const res = await Functions.getRemainingTime(data);
+      const res = await Functions.getSingleLecture(data);
       this.remainingTime = res.data.remaind;
       this.singleLecture = res.data.lecture;
     } catch (error) {
-      // this.lectureAlert = true;
-      this.showWarrning();
-
+      // this.showWarrning();
       setTimeout(() => {
         this.$router.push("/lectures");
       }, 3000);
+      console.log(error.response);
       console.log(error);
     }
 

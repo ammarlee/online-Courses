@@ -41,7 +41,7 @@
     </div>
     <!-- second slide   -->
 
-    <v-sheet class="mx-auto" elevation="8" max-width="1000" min-height="200">
+    <v-sheet class="mx-auto" elevation="8" max-width="800" min-height="200">
       <h1 class="text-center text-capitalize info--text pa-5">lectures</h1>
       <v-slide-group v-model="model2" class="pa-4" show-arrows>
         <v-slide-item v-for="n in chapters" :key="n" v-slot="{ active, toggle }">
@@ -153,7 +153,6 @@ export default {
 
   async mounted() {
     const res = await Functions.getAllLectures();
-    console.log(res);
     this.lectures = res.data.lectures;
     let Editchapters = this.lectures.map((i) => {
       return i.chapter;
@@ -180,7 +179,7 @@ export default {
       try {
         let paymentData = {
           serialNumber: this.secretNumber,
-          studentId: "606addb663cfb021ac7375c2",
+          studentId: this.currentUser._id,
           lectureId: this.lectureId,
         };
 
@@ -210,67 +209,45 @@ export default {
         return;
       }
     },
-    getAttendeceStudent(userId, lecture) {
+    isStudentInAttendece(userId, lecture) {
       let student = lecture.StudentAttendance.find((i) => {
         return i.studentId.toString() == userId.toString();
       });
       return student;
     },
+    getLectureFinishedTime(student) {
+      let StartingTime =
+        new Date(student.endTime).getTime() - new Date().getTime();
+
+      let remaind = Math.round(StartingTime);
+      if (remaind <= 0) {
+        this.dialog = true;
+        return;
+      } else{
+          this.$router.push("/lecture/" + this.lectureId);
+          return
+      }
+    },
 
     async goToLecture(id) {
-      // test local with store data
-
       this.IsUserAuthanticated();
       this.lectureId = id;
       const userId = this.currentUser._id;
-      let lecture = this.lectures.find((i) => {
-        return i._id == id;
-      });
-
-      // const endTime = new Date(new Date().getTime() + 30 * 60000);
-
+      let lecture = this.lectures.find((i) => i._id == id);
       if (lecture.free === false) {
-        let student = this.getAttendeceStudent(userId, lecture);
-
+        let student = this.isStudentInAttendece(userId, lecture);
         if (!student) {
           this.dialog = true;
           return;
         }
-        let StartingTime =
-          new Date(student.endTime).getTime() - new Date().getTime();
-        console.log(StartingTime);
-        let remaind = Math.round(StartingTime);
-        console.log(remaind);
-        if (remaind <= 0) {
-          console.log("your time is over");
-          this.dialog = true;
-        } else {
-          let remainTime = this.msToTime(StartingTime); // "4:59"
-          console.log(remainTime);
-          this.$store.dispatch("remainingTime", student.endTime);
-          this.$store.dispatch("singleLecture", lecture);
-          this.$router.push("/lecture/" + id);
-        }
+        this.getLectureFinishedTime(student)
       } else {
-        let student = this.getAttendeceStudent(userId, lecture);
+        let student = this.isStudentInAttendece(userId, lecture);
         if (!student) {
           this.$router.push("/lecture/" + id);
           return;
         }
-
-        let StartingTime =
-          new Date(student.endTime).getTime() - new Date().getTime();
-        let remaind = Math.round(StartingTime);
-
-        if (remaind <= 0) {
-          console.log("your time is over");
-          this.dialog = true;
-        } else {
-          let remainTime = this.msToTime(StartingTime); // "4:59"
-          console.log(remainTime);
-          console.log("your time is over");
-          this.dialog = true;
-        }
+        this.getLectureFinishedTime(student)
       }
     },
   },

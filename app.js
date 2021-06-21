@@ -9,9 +9,15 @@ const hpp = require("hpp");
 const mongoSanitize = require("express-mongo-sanitize");
 const morgan = require("morgan");
 const xss = require("xss-clean");
-const AuthRoutes = require("./routes/auth");
-const PostRoutes = require("./routes/post");
-const HomeRoutes = require("./routes/home");
+
+const AuthRoutes = require("./routes/Authantications-Routes");
+const HomeRoutes = require("./routes/Home-Routes");
+const StudentsRoutes = require("./routes/Students-Routes");
+const QuestionsRoutes = require("./routes/Questions-Routes");
+const LecturesRoutes = require("./routes/Lectures-Routes");
+const ExamsRoutes = require("./routes/Exams-Routes");
+const SerialsRoutes = require("./routes/Serials-Routes");
+
 var MongoDBStore = require("connect-mongodb-session")(session);
 const cookieParser = require("cookie-parser");
 const livereload = require("connect-livereload");
@@ -22,7 +28,7 @@ var app = express();
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb" }));
 app.use(bodyParser.json({ type: "application/*+json", inflate: false }));
-app.use(bodyParser.json());
+// app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
@@ -82,11 +88,15 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 //     .catch((err) => console.log(err));
 // });
 
-app.use(AuthRoutes);
-app.use(PostRoutes);
-// app.use(HomeRoutes);
 
-const moment = require("moment");
+
+app.use(AuthRoutes);
+app.use(HomeRoutes);
+app.use(StudentsRoutes);
+app.use(QuestionsRoutes);
+app.use(LecturesRoutes);
+app.use(ExamsRoutes);
+app.use(SerialsRoutes);
 
 mongoose
   .connect(MONGODB_URI)

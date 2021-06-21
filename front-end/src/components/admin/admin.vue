@@ -1,5 +1,5 @@
 <template>
-  <div class="text--center grey lighten-3">
+  <div class="text--center">
     <div>
       <v-navigation-drawer
         app

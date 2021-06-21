@@ -8,22 +8,25 @@
     <v-row>
       <v-col cols="12">
         <div>
-          <v-row>
+          <v-row dense>
             <v-col cols="12" sm="4" md="4">
-              <v-text-field label="text" persistent-hint outlined v-model="lecture.text"></v-text-field>
+              <v-text-field label="text"  dense  persistent-hint outlined v-model="lecture.text"></v-text-field>
             </v-col>
             <v-col cols="12" sm="4" md="4">
               <v-text-field
+
                 label="chapter"
                 persistent-hint
                 type="number"
                 outlined
+                dense
                 v-model="lecture.chapter"
               ></v-text-field>
             </v-col>
             <!--  -->
             <v-col cols="12" sm="4" md="4">
               <v-text-field
+              dense
                 label="lesson"
                 type="number"
                 persistent-hint
@@ -33,6 +36,7 @@
             </v-col>
             <v-col cols="12" sm="6" md="4">
               <v-text-field
+              dense
                 label="duration"
                 persistent-hint
                 outlined
@@ -103,6 +107,7 @@ export default {
       });
     },
     async uploadLecture() {
+      this.lecture.userId = this.currentUser._id
       const formData = new FormData();
       for (const i of Object.keys(this.lecture.content.img)) {
         formData.append("files", this.lecture.content.img[i]);

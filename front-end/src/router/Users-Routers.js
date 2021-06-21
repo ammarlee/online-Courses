@@ -16,6 +16,17 @@ export default [
         },
       },
       {
+        path: "/best",
+        name: "best",
+        components: {
+          default:()=>{ return import("@/components/student/Best")},
+          header: header,
+          footer: footer,
+
+          
+        },
+      },
+      {
         path: "/profile",
         name: "profile",
         beforeEnter:guardPage,

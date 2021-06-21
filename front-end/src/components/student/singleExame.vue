@@ -30,6 +30,7 @@
           <v-btn class="pink ma-3 white--text" @click="sendTheExame()">finish exame</v-btn>
         </div>
       </div>
+      
       <!-- dialog for answers  -->
       <v-dialog v-model="dialog" width="800">
         <v-card v-if="!showResult">
@@ -96,6 +97,15 @@ export default {
     this.getUserLocation();
     this.reload();
   },
+  beforeRouteLeave(to, from, next) {
+   console.log(to,from);
+   let confirmed = confirm('are you sure you want to leave the page ')
+   if (confirmed) {
+     next();
+     
+   }
+
+  },
   computed: {
     mainTimer() {
       return this.$store.getters.timer;
@@ -154,7 +164,6 @@ export default {
         this.result = res.data.result;
         this.fullMarks = res.data.fullMarks;
         this.dialog = true;
-        // this.showResult =true
 
         this.exam.questions.forEach((question) => {
           this.errorQ.forEach((a) => {

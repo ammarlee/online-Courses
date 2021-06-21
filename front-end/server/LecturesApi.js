@@ -18,7 +18,8 @@ static   editLecture(data){
 }
 
 static   getSingleLecture(data){
-    return  axios().post(`get-single-lecture`,{lectureId:data.lectureId, userId:data.userId})
+    return  axios().post(`get-single-lecture`,{
+        lectureId:data.lectureId, userId:data.userId})
 }
 static getLectureDetails(data){
     return  axios().post(`get-single-lecture-details`,{lectureId:data.id})

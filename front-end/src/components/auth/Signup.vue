@@ -2,7 +2,7 @@
   <div class="text-center pt-15 pb-16 info--text" id="setImg">
     <div id="overlay"></div>
     <router-link to="/login" tag="span">
-      <v-icon style="cursor: pointer;font-size: 68px;" color="white">mdi-facebook</v-icon>
+      <v-icon style="cursor: pointer;font-size: 68px;" color="white">mdi-school</v-icon>
     </router-link>
 
     <v-card class="mx-auto mt-0" max-width="500"  style="background:transparent ">
@@ -53,7 +53,7 @@
 
               <span class="caption text-capitalize white--text text--darken-1">
                 have an account?
-                <router-link tag="a" to="/login">login</router-link>
+                <router-link tag="a" to="/login" class="white--text ">login</router-link>
               </span>
             </v-card-text>
           </v-window-item>

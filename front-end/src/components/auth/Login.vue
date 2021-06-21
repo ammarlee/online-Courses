@@ -4,7 +4,7 @@
     <template>
       <div>
         <router-link to="/" tag="span">
-          <v-icon style="cursor: pointer;font-size: 68px;" color="white">mdi-facebook</v-icon>
+          <v-icon style="cursor: pointer;font-size: 68px;" color="white">mdi-school</v-icon>
         </router-link>
         <v-card class="mx-auto" style="max-width: 500px;background:transparent ">
           <v-toolbar
@@ -172,8 +172,7 @@ export default {
   z-index: 0;
   position: absolute;
 }
-.about {
-}
+
 .custom-loader {
   animation: loader 1s infinite;
   display: flex;

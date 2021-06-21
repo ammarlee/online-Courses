@@ -110,13 +110,14 @@
       <v-dialog v-model="dialog" width="500">
         <v-card>
           <v-card-title
-            class="headline yellow black--text text-capitalize text-center lighten-2"
+            class="headline text-body-2 yellow black--text text-capitalize text-center lighten-2"
           >enter the card number</v-card-title>
-          <div class="ma-5">
+          <div class="ma-2 mt-3">
             <v-text-field
               autocomplete="off"
               hide-details
               class="mb-3"
+              dense
               v-model="secretNumber"
               outlined
               label="Enter Secret Code"

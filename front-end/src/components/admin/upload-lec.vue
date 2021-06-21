@@ -71,6 +71,7 @@
 <script>
 import Functions from "../../../server/LecturesApi";
 export default {
+  
   name: "upload-lecture",
   data() {
     return {

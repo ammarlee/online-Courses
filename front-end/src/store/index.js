@@ -77,6 +77,12 @@ export default new Vuex.Store({
     closeAlert(state,payload){
       state.alert = payload
     },
+    updateNotification(state,payload){
+      let indexofElement = state.user.notifications.findIndex(i=>{
+         return i._id.toString()==payload._id.toString()
+       })
+       state.user.notifications[indexofElement].seen = true
+     },
     myMsgs(state,payload){
       state.myMsgs.push(payload)
         },

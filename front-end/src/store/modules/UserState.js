@@ -22,7 +22,12 @@ const getters = {
 
 }
 const mutations = {
-    
+    updateNotification(state,payload){
+        let indexofElement = state.user.notifications.findIndex(i=>{
+           return i._id.toString()==payload._id.toString()
+         })
+         state.user.notifications[indexofElement].seen = true
+       },
        pushNewNotification(state,payload){
         state.user.notifications.unshift(payload.lastNotification);
      },
@@ -73,6 +78,9 @@ const mutations = {
 
 }
 const actions = {
+  updateNotification({commit},payload){
+    commit('updateNotification',payload)
+  },
     setUser({ commit }, user) {
         commit("setUser", user);
       },
